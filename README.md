@@ -44,12 +44,12 @@ graph TB
 - **Privacy Engine**: Differential privacy implementation for secure analytics
 - **Risk Assessment**: Multi-layered security and bias detection
 - **Data Aggregation**: Privacy-preserving metrics collection
-- **Privacy Controls**: Configurable privacy parameters (ε, δ)
+- **Privacy Controls**: Configurable privacy parameters - epsilon and sensitivity.
 
 ### **Frontend (Streamlit)**
 - **Interactive Dashboard**: Real-time prompt analysis interface
 - **Analytics Visualization**: Aggregated insights with privacy guarantees
-- **Privacy Budget(Configurable)**: Calculate no. of prompts which can be used per session after which privacy guarantee decays
+- **Privacy Budget(Configurable)**: Calculate no. of prompts which can be used per session after which privacy guarantee decays.
 
 ### **Core Analysis Modules**
 - **Sensitive Data Detection**: PII, credentials, and confidential information
@@ -122,7 +122,7 @@ streamlit run streamlit_app.py --server.port 8501
 # Backend configuration
 MONGO_URI=mongodb://admin:password@mongo:27017
 PRIVACY_BUDGET=10.0(Configurable)
-# You can add epsilon and delta(sensitivity) parameters here as well.For now they are hardcoded in backend.
+# You can add epsilon and sensitivity parameters here as well.For now they are hardcoded in backend.
 # Frontend configuration
 BACKEND_URL=http://localhost:8000
 ```
@@ -181,27 +181,15 @@ curl -X POST "http://localhost:8000/analyze" \
 
 ### Technical Details
 - **Laplace Mechanism**: For discrete counting queries
-- **Privacy Accounting**: Automatic ε-δ budget tracking
+- **Privacy Accounting**: Automatic privacy budget tracking
 - **Noise Calibration**: Adaptive noise based on query sensitivity
 
 
 
 ## 📚 Documentation
 
-### API Documentation
-- **OpenAPI Spec**: Available at `/docs` when running
-- **Redoc**: Available at `/redoc` for alternative documentation
-- **Postman Collection**: `docs/postman_collection.json`
-
 ### Academic Papers
 - **Differential Privacy**: [Dwork et al. 2006](https://link.springer.com/chapter/10.1007/11787006_1)
 - **Privacy in ML**: [Abadi et al. 2016](https://arxiv.org/abs/1607.00133)
 - **Prompt Analysis**: [Wallace et al. 2019](https://arxiv.org/abs/1908.07125)
 
-
-
-## 🙏 Acknowledgments
-
-- **Differential Privacy Library**: [Google's DP library](https://github.com/google/differential-privacy)
-- **FastAPI Framework**: [Sebastián Ramirez](https://github.com/tiangolo/fastapi)
-- **Streamlit**: [Streamlit Team](https://streamlit.io/)
