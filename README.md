@@ -43,7 +43,7 @@ graph TB
 - **Prompt Analysis API**: RESTful endpoints for real-time prompt analysis
 - **Privacy Engine**: Differential privacy implementation for secure analytics
 - **Risk Assessment**: Multi-layered security and bias detection
-- **Data Aggregation**: Privacy-preserving metrics collection
+- **Data Aggregation**: Privacy-preserving metrics collection in MongoDB database.
 - **Privacy Controls**: Configurable privacy parameters - epsilon and sensitivity.
 
 ### **Frontend (Streamlit)**
