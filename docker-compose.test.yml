@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:6
+    container_name: mongo-test
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - "27018:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 30s
+      retries: 3
+    volumes:
+      - test_mongodb_data:/data/db
+
+  backend-tests:
+    build:
+      context: ./backend
+      args:
+        INSTALL_TEST_DEPS: "true"
+    environment:
+      MONGO_URI: "mongodb://admin:password@mongo:27017"
+      PYTHONPATH: "/app"
+    volumes:
+      - ./backend:/app  # Full mount for live reloads
+    command: >
+      sh -c "pytest /app/tests -v --cov=/app/app
+             --cov-report=xml:/app/coverage.xml"
+
+volumes:
+  test_mongodb_data:
+  
