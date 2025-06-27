@@ -64,6 +64,10 @@ This project uses [Keploy](https://keploy.io) for AI-powered API testing:
 - Go to app.keploy.io and select generate API tests.
 - Enter the URL , curl test commands and openai schema in their respective field and run tests and view report.
 
+### Screenshots from the Keploy Testing Platform
+![task_1.png](images/task_1.png)
+![task_1_2.png](images/task_1_2.png)
+
 ### Running Tests
 ```bash
 # Unit , Integration and API tests
