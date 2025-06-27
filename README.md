@@ -68,6 +68,9 @@ This project uses [Keploy](https://keploy.io) for AI-powered API testing:
 ![task_1.png](images/task_1.png)
 ![task_1_2.png](images/task_1_2.png)
 
+### Screenshot of Keploy Testing Web Extension
+![yt](images/yt.png)
+
 ### Running Tests
 ```bash
 # Unit , Integration and API tests
