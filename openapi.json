@@ -1,0 +1,333 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Privacy-Preserving Prompt Analysis API",
+    "description": "API for analyzing LLM prompts with differential privacy guarantees, detecting PII, bias, and prompt injections while protecting user data.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/analyze": {
+      "post": {
+        "summary": "Analyze prompt for privacy risks",
+        "description": "Analyzes a prompt for PII, bias, and injection patterns using differential privacy",
+        "operationId": "analyze_prompt_endpoint_analyze_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromptRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analytics": {
+      "get": {
+        "summary": "Get differentially private analytics",
+        "description": "Returns aggregate statistics about analyzed prompts with privacy guarantees",
+        "operationId": "get_analytics_analytics_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/privacy-budget": {
+      "get": {
+        "summary": "Check privacy budget status",
+        "description": "Returns current privacy budget allocation and usage",
+        "operationId": "get_privacy_budget_privacy_budget_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BudgetResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health check endpoint",
+        "description": "Simple health check to verify API availability",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AnalysisResponse": {
+        "properties": {
+          "risk_score": {
+            "type": "number",
+            "title": "Risk Score",
+            "description": "Risk score between 0 and 1",
+            "example": 0.6
+          },
+          "risk_factors": {
+            "items": {
+              "$ref": "#/components/schemas/RiskFactor"
+            },
+            "type": "array",
+            "title": "Risk Factors",
+            "description": "List of detected risk factors"
+          },
+          "suggestions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Suggestions",
+            "description": "Privacy improvement suggestions",
+            "example": [
+              "Remove personal identifiers"
+            ]
+          },
+          "needs_review": {
+            "type": "boolean",
+            "title": "Needs Review",
+            "description": "Whether the prompt needs manual review",
+            "example": true
+          },
+          "privacy_guarantee": {
+            "type": "string",
+            "title": "Privacy Guarantee",
+            "description": "Differential privacy epsilon value",
+            "example": "ε=0.5"
+          }
+        },
+        "type": "object",
+        "required": [
+          "risk_score",
+          "risk_factors",
+          "suggestions",
+          "needs_review",
+          "privacy_guarantee"
+        ],
+        "title": "AnalysisResponse"
+      },
+      "AnalyticsResponse": {
+        "properties": {
+          "total_prompts": {
+            "type": "integer",
+            "title": "Total Prompts",
+            "description": "Total number of analyzed prompts",
+            "example": 150
+          },
+          "avg_risk_score": {
+            "type": "number",
+            "title": "Avg Risk Score",
+            "description": "Average risk score",
+            "example": 0.3
+          },
+          "top_risk_factors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Top Risk Factors",
+            "description": "Most common risk factors",
+            "example": [
+              "PII",
+              "BIAS"
+            ]
+          },
+          "epsilon_used": {
+            "type": "number",
+            "title": "Epsilon Used",
+            "description": "Privacy budget used for this query",
+            "example": 0.1
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_prompts",
+          "avg_risk_score",
+          "top_risk_factors",
+          "epsilon_used"
+        ],
+        "title": "AnalyticsResponse"
+      },
+      "BudgetResponse": {
+        "properties": {
+          "total_budget": {
+            "type": "number",
+            "title": "Total Budget",
+            "description": "Total privacy budget",
+            "example": 10
+          },
+          "used_epsilon": {
+            "type": "number",
+            "title": "Used Epsilon",
+            "description": "Used privacy budget",
+            "example": 2.5
+          },
+          "remaining_budget": {
+            "type": "number",
+            "title": "Remaining Budget",
+            "description": "Remaining privacy budget",
+            "example": 7.5
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_budget",
+          "used_epsilon",
+          "remaining_budget"
+        ],
+        "title": "BudgetResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "PromptRequest": {
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "title": "Prompt",
+            "description": "The prompt text to analyze",
+            "example": "My email is test@example.com and I need help with data analysis"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "Optional user identifier",
+            "default": "anonymous",
+            "example": "user_123"
+          }
+        },
+        "type": "object",
+        "required": [
+          "prompt"
+        ],
+        "title": "PromptRequest"
+      },
+      "RiskFactor": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "description": "Type of risk factor",
+            "example": "PII"
+          },
+          "matches": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Matches",
+            "description": "Detected matches",
+            "example": [
+              "test@example.com"
+            ]
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count",
+            "description": "Number of matches found",
+            "example": 1
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "matches",
+          "count"
+        ],
+        "title": "RiskFactor"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

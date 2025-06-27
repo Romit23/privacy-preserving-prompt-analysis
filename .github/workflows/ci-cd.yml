@@ -1,0 +1,157 @@
+name: CI/CD with Keploy API Testing
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  MONGO_URI: mongodb://admin:password@localhost:27017
+  PRIVACY_BUDGET: 10.0
+  BACKEND_URL: http://localhost:8000
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      mongodb:
+        image: mongo:6.0
+        env:
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: password
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ping: 1})'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        cd backend
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+
+    - name: Run unit tests
+      run: |
+        cd backend
+        python -m pytest tests/ -v --cov=app --cov-report=xml
+
+    - name: Start application for API testing
+      run: |
+        cd backend
+        python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+        sleep 10
+        echo "🚀 Application started on port 8000"
+
+    - name: Health check
+      run: |
+        curl -f http://localhost:8000/health || exit 1
+        echo "✅ Health check passed"
+
+    - name: Test API endpoints manually
+      run: |
+        echo "🧪 Testing /analyze endpoint"
+        curl -X POST http://localhost:8000/analyze \
+          -H "Content-Type: application/json" \
+          -d '{"prompt":"My email is test@example.com and my SSN is 123-45-6789","user_id":"test_user"}' \
+          -f || exit 1
+        
+        echo "🧪 Testing /privacy-budget endpoint"
+        curl -f http://localhost:8000/privacy-budget || exit 1
+        
+        echo "🧪 Testing /analytics endpoint"
+        curl -f http://localhost:8000/analytics || exit 1
+        
+        echo "✅ Manual API tests passed"
+
+    - name: Setup Keploy
+      run: |
+        curl --silent --location "https://github.com/keploy/keploy/releases/latest/download/keploy_linux_amd64.tar.gz" | tar xz -C /tmp
+        sudo mkdir -p /usr/local/bin && sudo mv /tmp/keploy /usr/local/bin
+        keploy --version
+
+    - name: Generate Keploy Test Cases
+      run: |
+        cd backend
+        echo "🎯 Generating Keploy test cases..."
+        
+        # Generate test case for analyze endpoint
+        keploy record --config-path . &
+        RECORD_PID=$!
+        
+        sleep 5
+        
+        # Make API calls to record test cases
+        curl -X POST http://localhost:8000/analyze \
+          -H "Content-Type: application/json" \
+          -d '{"prompt":"My email is john@example.com","user_id":"john_doe"}'
+        
+        curl -X POST http://localhost:8000/analyze \
+          -H "Content-Type: application/json" \
+          -d '{"prompt":"This prompt contains bias against certain groups","user_id":"test_user"}'
+        
+        curl http://localhost:8000/privacy-budget
+        curl http://localhost:8000/analytics
+        curl http://localhost:8000/health
+        
+        sleep 2
+        kill $RECORD_PID
+        echo "✅ Test cases recorded"
+
+    - name: Run Keploy Tests
+      run: |
+        cd backend
+        echo "🧪 Running Keploy API tests..."
+        keploy test --config-path . --delay 5
+        echo "✅ Keploy tests completed"
+
+    - name: Upload test coverage
+      if: always()
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./backend/coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+
+    - name: Upload OpenAPI schema as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: openapi-schema
+        path: |
+          backend/openapi.json
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy notification
+      run: |
+        echo "🚀 Deployment would happen here"
+        echo "✅ All tests passed, ready for production!"
