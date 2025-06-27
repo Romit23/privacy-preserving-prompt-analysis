@@ -170,14 +170,6 @@ open http://localhost:8000/docs
 }
 ```
 
-### CI/CD Pipeline
-The project includes GitHub Actions workflow with:
-- ✅ Unit tests with pytest
-- ✅ API testing with Keploy  
-- ✅ OpenAPI schema generation
-- ✅ Test coverage reporting
-- ✅ Automated deployment checks
-
 ![CI/CD Status](https://github.com/Romit23/privacy-preserving-prompt-analysis/workflows/CI%2FCD%20with%20Keploy%20API%20Testing/badge.svg)
 
 ### Key Configuration
